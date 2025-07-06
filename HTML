@@ -1,118 +1,148 @@
-
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>1010! 게임</title>
-<style>
-  /* 전체 화면 스타일 */
-body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-color: #f0f0f0;
-    flex-direction: column;
-}
+    <style>
+        /* 전체 화면 스타일 */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+            background-color: #f0f0f0;
+            gap: 40px;
+            margin: 0;
+            padding: 20px;
+        }
 
-/* 게임 컨테이너 */
-.game-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-}
+        /* 게임 컨테이너 (기존 구조 유지) */
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
 
-/* 게임 보드 (10x10) */
-.game-board {
-    display: grid;
-    grid-template-columns: repeat(10, 40px);
-    grid-template-rows: repeat(10, 40px);
-    gap: 2px;
-    background-color: #ccc;
-    padding: 5px;
-    border-radius: 5px;
-}
+        /* 게임 보드 (10x10) */
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(10, 40px);
+            grid-template-rows: repeat(10, 40px);
+            gap: 2px;
+            background-color: #ccc;
+            padding: 5px;
+            border-radius: 5px;
+        }
 
-/* 개별 셀 스타일 */
-.cell {
-    width: 40px;
-    height: 40px;
-    background-color: white;
-    border: 1px #ccc;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 5px;
-}
+        /* 개별 셀 스타일 */
+        .cell {
+            width: 40px;
+            height: 40px;
+            background-color: white;
+            border: 1px #ccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+        }
 
-/* 블록 슬롯 (3개) */
-.block-bank {
-    display: flex;
-    gap: 30px;
-    padding : 30px;
-}
+        /* 블록 슬롯 (3개) */
+        .block-bank {
+            display: flex;
+            gap: 30px;
+            padding: 30px;
+        }
 
-.block-slot {
-    width: 150px;
-    height: 120px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+        .block-slot {
+            width: 150px;
+            height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-/* 스코어보드 스타일 */
-.score-board {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 10px;
-    display: flex;
-    gap: 30px;
-}
+        /* 스코어보드 스타일 */
+        .score-board {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            gap: 30px;
+        }
 
-.score-group,
-.top-score-group {
-    display: flex;
-    gap: 5px; /* Score와 숫자, TOP과 숫자 사이 간격 */
-}
+        .score-group,
+        .top-score-group {
+            display: flex;
+            gap: 5px;
+        }
 
+        /* 리셋 버튼 스타일 */
+        #reset-button, #endgame-button {
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #ff6347;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
 
-/* 리셋 버튼 스타일 */
-#reset-button, #endgame-button {
-    padding: 10px 20px;
-    font-size: 18px;
-    background-color: #ff6347; /* Tomate 색 */
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 20px;
-}
+        #reset-button:hover, #endgame-button:hover {
+            background-color: #ff4500;
+        }
 
-#reset-button:hover,  #endgame-button:hover {
-    background-color: #ff4500; /* Hover 시 색 변화 */
-}
-  
-</style>
+        /* 리더보드 컨테이너 스타일 */
+        .leaderboard-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 200px;
+            // position: sticky; // 팝업창 style
+            top: 20px;
+        }
+
+        .leaderboard-container h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .leaderboard-container ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .leaderboard-container li {
+            font-size: 16px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
 </head>
 <body>
     <div class="game-container">
         <div class="score-board">
-        <span class="score-group">Score: <span id="score">0</span></span>
-        <span class="top-score-group">TOP: <span id="top-score">0</span></span>  
+            <span class="score-group">Score: <span id="score">0</span></span>
+            <span class="top-score-group">TOP: <span id="top-score">0</span></span>
         </div>
-
         <div class="game-board"></div>
         <div class="block-bank">
             <div class="block-slot" id="slot-1"></div>
             <div class="block-slot" id="slot-2"></div>
             <div class="block-slot" id="slot-3"></div>
         </div>
-      <div class = "button">
-      <button id="reset-button">Reset</button>
-      <button id="endgame-button">End Game</button>
-      </div>
+        <div class="button">
+            <button id="reset-button">Reset</button>
+            <button id="endgame-button">End Game</button>
+        </div>
+    </div>
+    <div class="leaderboard-container">
+        <h2>Top 5 Scores</h2>
+        <ul id="leaderboard-list"></ul>
     </div>
 </body>
-
 </html>
