@@ -1,83 +1,84 @@
+const gameBoard = document.querySelector(".game-board");
+const blockSlots = document.querySelectorAll(".block-slot");
+const scoreDisplay = document.getElementById("score");
+const topScoreDisplay = document.getElementById("top-score");
+const leaderboardList = document.getElementById("leaderboard-list");
 
-    const gameBoard = document.querySelector(".game-board");
-    const blockSlots = document.querySelectorAll(".block-slot");
-    const scoreDisplay = document.getElementById("score");
+let score = 0;
+let topScore = 0;
+let leaderboard = [];
 
-    let score = 0;
-
-//-----------------------------------------------------
-// 1️⃣ Local Storage에서 topScore 가져오기
-let topScore = localStorage.getItem("topScore");
-
-// 2️⃣ 가져온 값이 없으면 0으로 설정
-if (topScore === null) {
-    topScore = 0;
-} else {
-    topScore = parseInt(topScore); // 문자열을 숫자로 변환
+// Load leaderboard from localStorage
+function loadLeaderboard() {
+    const stored = localStorage.getItem("leaderboard");
+    leaderboard = stored ? JSON.parse(stored) : [];
+    // Ensure topScore reflects the highest score in leaderboard
+    topScore = leaderboard.length > 0 ? Math.max(...leaderboard.map(entry => entry.score)) : 0;
+    topScoreDisplay.textContent = topScore;
+    updateLeaderboardDisplay();
 }
 
-// 3️⃣ top-score 업데이트
-document.getElementById("top-score").textContent = topScore;
-//-----------------------------------------------------------
+// Save leaderboard to localStorage
+function saveLeaderboard() {
+    localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+}
 
+// Update leaderboard display
+function updateLeaderboardDisplay() {
+    leaderboardList.innerHTML = "";
+    leaderboard
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 5)
+        .forEach((entry, index) => {
+            const li = document.createElement("li");
+            li.textContent = `${entry.name} - ${entry.score}점`;
+            leaderboardList.appendChild(li);
+        });
+}
 
-    function updateScore(points) {
-        score += points;
-        scoreDisplay.textContent = score;
-    }
-
-    // 10x10 게임 보드 생성
-    for (let i = 0; i < 100; i++) {
-        const cell = document.createElement("div");
-        cell.classList.add("cell");
-        gameBoard.appendChild(cell);
-    }
+// Update score and check for new top score
+function updateScore(points) {
+    score += points;
+    scoreDisplay.textContent = score;
+}
 
 const blockBank = [
-    { shape: [[1]], color: "#7e8ed5" }, // 1x1 블록
-    { shape: [[1, 1]], color: "#fec63c" }, // 1x2 블록
-    { shape: [[1], [1]], color: "#fec63c" }, // 2x1 블록
-    { shape: [[1, 1, 1]], color: "#ed954a" }, // 1x3 블록
-    { shape: [[1], [1], [1]], color: "#ed954a" }, // 3x1 블록
-    { shape: [[1, 1, 1, 1]], color: "#e76a81" }, // 1x4 블록
-    { shape: [[1], [1], [1], [1]], color: "#e76a81" }, // 4x1 블록
-    { shape: [[1, 1, 1, 1, 1]], color: "#dc6555" }, // 1x5 블록
-    { shape: [[1], [1], [1], [1], [1]], color: "#dc6555" }, // 5x1 블록
-    { shape: [[1, 1], [1, 1]], color: "#98dc55" }, // 2x2 블록
-    { shape: [[1, 1, 1], [1, 1, 1], [1, 1, 1]], color: "#4dd5b0" }, // 3x3 블록
-
-    // 2x2에서 한쪽 꼭짓점 제거 (4종류)
+    { shape: [[1]], color: "#7e8ed5" },
+    { shape: [[1, 1]], color: "#fec63c" },
+    { shape: [[1], [1]], color: "#fec63c" },
+    { shape: [[1, 1, 1]], color: "#ed954a" },
+    { shape: [[1], [1], [1]], color: "#ed954a" },
+    { shape: [[1, 1, 1, 1]], color: "#e76a81" },
+    { shape: [[1], [1], [1], [1]], color: "#e76a81" },
+    { shape: [[1, 1, 1, 1, 1]], color: "#dc6555" },
+    { shape: [[1], [1], [1], [1], [1]], color: "#dc6555" },
+    { shape: [[1, 1], [1, 1]], color: "#98dc55" },
+    { shape: [[1, 1, 1], [1, 1, 1], [1, 1, 1]], color: "#4dd5b0" },
     { shape: [[1, 1], [1, 0]], color: "#59cb86" },
     { shape: [[1, 1], [0, 1]], color: "#59cb86" },
     { shape: [[1, 0], [1, 1]], color: "#59cb86" },
     { shape: [[0, 1], [1, 1]], color: "#59cb86" },
-
-    // 3x3에서 한쪽 꼭짓점 2x2 제거 (4종류)
     { shape: [[0, 0, 1], [0, 0, 1], [1, 1, 1]], color: "#5cbee4" },
     { shape: [[1, 0, 0], [1, 0, 0], [1, 1, 1]], color: "#5cbee4" },
     { shape: [[1, 1, 1], [1, 0, 0], [1, 0, 0]], color: "#5cbee4" },
     { shape: [[1, 1, 1], [0, 0, 1], [0, 0, 1]], color: "#5cbee4" }
 ];
 
-
-    function getRandomBlocks() {
-        let chosenBlocks = [];
-        while (chosenBlocks.length < 3) {
-            let randomIndex = Math.floor(Math.random() * blockBank.length);
-            let block = blockBank[randomIndex];
-            chosenBlocks.push(block);
-        }
-        return chosenBlocks;
+function getRandomBlocks() {
+    let chosenBlocks = [];
+    while (chosenBlocks.length < 3) {
+        let randomIndex = Math.floor(Math.random() * blockBank.length);
+        let block = blockBank[randomIndex];
+        chosenBlocks.push(block);
     }
+    return chosenBlocks;
+}
 
-// 블록 생성 함수 (색상 적용)
 function placeBlocks() {
     const blocks = getRandomBlocks();
-
     blockSlots.forEach((slot, index) => {
         slot.innerHTML = "";
-        const { shape, color } = blocks[index]; // 블록 모양과 색상 가져오기
-
+        const { shape, color } = blocks[index];
         const blockElement = document.createElement("div");
         blockElement.classList.add("block");
         blockElement.style.display = "grid";
@@ -101,7 +102,7 @@ function placeBlocks() {
                     cellDiv.style.border = "2px solid white";
                     cellDiv.style.borderRadius = "5px";
                 } else {
-                    cellDiv.style.backgroundColor = "transparent"; // 빈칸은 투명하게
+                    cellDiv.style.backgroundColor = "transparent";
                 }
                 blockElement.appendChild(cellDiv);
             });
@@ -111,17 +112,15 @@ function placeBlocks() {
     });
 }
 
-    function checkAndGenerateNewBlocks() {
-        const remainingBlocks = document.querySelectorAll(".block-slot .block");
-        if (remainingBlocks.length === 0) {
-            placeBlocks();
-        }
+function checkAndGenerateNewBlocks() {
+    const remainingBlocks = document.querySelectorAll(".block-slot .block");
+    if (remainingBlocks.length === 0) {
+        placeBlocks();
     }
+}
 
-    function checkAndClearLines() {
-    let clearedCellsSet = new Set(); // 중복 제거를 위한 Set
-
-    // 1️⃣ 가로 줄 체크 (왼쪽 → 오른쪽 순서로 삭제)
+function checkAndClearLines() {
+    let clearedCellsSet = new Set();
     for (let r = 0; r < 10; r++) {
         let isRowFull = true;
         let rowCells = [];
@@ -138,7 +137,6 @@ function placeBlocks() {
         }
     }
 
-    // 2️⃣ 세로 줄 체크 (위 → 아래 순서로 삭제)
     for (let c = 0; c < 10; c++) {
         let isColFull = true;
         let colCells = [];
@@ -151,15 +149,13 @@ function placeBlocks() {
             colCells.push(index);
         }
         if (isColFull) {
-            colCells.forEach(index => clearedCellsSet.add(index)); // 중복된 셀 자동 제거
+            colCells.forEach(index => clearedCellsSet.add(index));
         }
     }
 
-    // 3️⃣ 순차적으로 셀 삭제 애니메이션 적용
     if (clearedCellsSet.size > 0) {
         let delay = 0;
-        let cellsArray = Array.from(clearedCellsSet); // Set을 배열로 변환
-
+        let cellsArray = Array.from(clearedCellsSet);
         cellsArray.forEach((index, i) => {
             setTimeout(() => {
                 let cell = gameBoard.children[index];
@@ -168,28 +164,24 @@ function placeBlocks() {
             }, delay + i * 50);
         });
 
-        // 애니메이션 후 점수 추가
         setTimeout(() => {
-            updateScore(clearedCellsSet.size); // 중복 없이 정확한 개수만 점수 추가
+            updateScore(clearedCellsSet.size);
         }, delay + cellsArray.length * 50);
     }
 }
 
-    gameBoard.addEventListener("dragover", (e) => {
-        e.preventDefault();
-    });
+gameBoard.addEventListener("dragover", (e) => {
+    e.preventDefault();
+});
 
-// 블록을 배치할 때 색상 적용
 gameBoard.addEventListener("drop", (e) => {
     e.preventDefault();
-
     const blockDataString = e.dataTransfer.getData("blockData");
-    const blockColor = e.dataTransfer.getData("blockColor"); // 색상 정보 가져오기
+    const blockColor = e.dataTransfer.getData("blockColor");
     if (!blockDataString) return;
 
     const blockData = JSON.parse(blockDataString);
     const sourceSlotId = e.dataTransfer.getData("slot-id");
-
     const cell = e.target.closest(".cell");
     if (!cell) return;
 
@@ -215,7 +207,7 @@ gameBoard.addEventListener("drop", (e) => {
         blockRow.forEach((cellValue, c) => {
             if (cellValue === 1) {
                 const targetIndex = (row + r) * 10 + (col + c);
-                gameBoard.children[targetIndex].style.backgroundColor = blockColor; // 색상 적용
+                gameBoard.children[targetIndex].style.backgroundColor = blockColor;
                 gameBoard.children[targetIndex].classList.add("filled");
             }
         });
@@ -233,49 +225,52 @@ gameBoard.addEventListener("drop", (e) => {
     checkAndGenerateNewBlocks();
 });
 
-      // 리셋 버튼 클릭 시 게임 초기화
-    function resetGame() {
-        // 점수 초기화
-        score = 0;
-        scoreDisplay.textContent = score;
-
-        // 게임 보드 초기화
-        gameBoard.innerHTML = "";
-        for (let i = 0; i < 100; i++) {
-            const cell = document.createElement("div");
-            cell.classList.add("cell");
-            gameBoard.appendChild(cell);
-        }
-
-        // 블록 슬롯 초기화
-        blockSlots.forEach(slot => {
-            slot.innerHTML = "";
-        });
-
-        // 새로운 블록 배치
-        placeBlocks();
+function resetGame() {
+    score = 0;
+    scoreDisplay.textContent = score;
+    gameBoard.innerHTML = "";
+    for (let i = 0; i < 100; i++) {
+        const cell = document.createElement("div");
+        cell.classList.add("cell");
+        gameBoard.appendChild(cell);
     }
-
-    // 리셋 버튼에 클릭 이벤트 추가
-    const resetButton = document.getElementById("reset-button");
-    resetButton.addEventListener("click", resetGame);
-
-const topScoreDisplay = document.getElementById("top-score");
+    blockSlots.forEach(slot => {
+        slot.innerHTML = "";
+    });
+    placeBlocks();
+}
 
 function endGame() {
     if (score > topScore) {
         topScore = score;
-        document.getElementById("top-score").textContent = topScore;
-
-        localStorage.setItem("topScore", topScore);
+        topScoreDisplay.textContent = topScore;
+        const playerName = prompt("New high score! Enter your name:");
+        const name = playerName && playerName.trim() !== "" ? playerName.trim() : "Anonymous";
+        leaderboard.push({ name, score });
+        saveLeaderboard();
+        updateLeaderboardDisplay();
+    } else if (score > 0) {
+        // Allow adding to leaderboard if score is positive, even if not a top score
+        const playerName = prompt("Game over! Enter your name for the leaderboard:");
+        const name = playerName && playerName.trim() !== "" ? playerName.trim() : "Anonymous";
+        leaderboard.push({ name, score });
+        saveLeaderboard();
+        updateLeaderboardDisplay();
     }
-
     resetGame();
 }
 
+const resetButton = document.getElementById("reset-button");
+resetButton.addEventListener("click", resetGame);
 
-    // endgame에 이벤트 추가
-    const endGameButton = document.getElementById("endgame-button");
-    endGameButton.addEventListener('click', endGame);
+const endGameButton = document.getElementById("endgame-button");
+endGameButton.addEventListener("click", endGame);
 
-    placeBlocks();
+// Initialize game
+loadLeaderboard();
+for (let i = 0; i < 100; i++) {
+    const cell = document.createElement("div");
+    cell.classList.add("cell");
+    gameBoard.appendChild(cell);
+}
+placeBlocks();
